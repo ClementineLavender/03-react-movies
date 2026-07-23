@@ -1,56 +1,51 @@
 import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import SearchBar from "../SearchBar/SearchBar";
+import MovieGrid from "../MovieGrid/MovieGrid";
+import Loader from "../Loader/Loader";
 
-import css from "./App.module.css";
-import type { Votes, VoteType } from '../../types/votes';
-
-import CafeInfo from "../CafeInfo/CafeInfo";
-import VoteOptions from "../VoteOptions/VoteOptions";
-import { VoteStats } from "../VoteStats/VoteStats";
-import Notification from "../Notification/Notification";
+import { fetchMovies } from "../../services/movieServices";
 
 export default function App() {
-  const [votes, setVotes] = useState<Votes>({
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  });
+  const [movies, setMovies] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
-  const handleVote = (type: VoteType) => {
-    setVotes((prevVotes) => ({
-      ...prevVotes,
-      [type]: prevVotes[type as keyof Votes] + 1,
-    }));
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSearch = async (query) => {
+    setMovies([]);
+    setIsLoading(true);
+
+    try {
+      const data = await fetchMovies(query);
+      const moviesData = data?.results || data;
+
+      if (!moviesData || moviesData.length === 0) {
+        toast.error("No movies found for your request.");
+        return;
+      }
+
+      setMovies(moviesData);
+    } catch (error) {
+      toast.error("Something went wrong. Please try again!");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const resetVotes = () => {
-    setVotes({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    });
+  const handleSelectMovie = (movie) => {
+    setSelectedMovie(movie);
   };
-
-  const totalVotes = votes.good + votes.neutral + votes.bad;
-  const positiveRate = totalVotes > 0 ? Math.round((votes.good / totalVotes) * 100) : 0;
 
   return (
-    <div className={css.app}>
-      <CafeInfo />
-      
-      <VoteOptions
-        onVote={handleVote}
-        onReset={resetVotes}
-        canReset={totalVotes > 0}
-      />
+    <div>
+      <Toaster position="top-right" />
+      <SearchBar onSubmit={handleSearch} />
 
-      {totalVotes > 0 ? (
-        <VoteStats 
-          votes={votes} 
-          totalVotes={totalVotes} 
-          positiveRate={positiveRate} 
-        />
+      {isLoading ? (
+        <Loader />
       ) : (
-        <Notification />
+        <MovieGrid movies={movies} onSelect={handleSelectMovie} />
       )}
     </div>
   );
