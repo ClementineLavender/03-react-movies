@@ -10,7 +10,7 @@ export default function MovieGrid({ movies, onSelect }) {
       {movies.map((movie) => {
         const posterUrl = movie.poster_path
           ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-          : "https://dl.dir.freebsd.org/doc/en_US.ISO8859-1/books/handbook/placeholder.png"; 
+          : "https://dl.dir.freebsd.org/doc/en_US.ISO8859-1/books/handbook/placeholder.png";
 
         return (
           <li key={movie.id}>
