@@ -10,11 +10,22 @@ export default function MovieGrid({ movies, onSelect }) {
       {movies.map((movie) => {
         const posterUrl = movie.poster_path
           ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-          : "https://via.placeholder.com/500x750?text=No+Poster";
+          : "https://dl.dir.freebsd.org/doc/en_US.ISO8859-1/books/handbook/placeholder.png"; 
 
         return (
           <li key={movie.id}>
-            <div className={css.card} onClick={() => onSelect(movie)}>
+            <div
+              className={css.card}
+              onClick={() => onSelect?.(movie)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect?.(movie);
+                }
+              }}
+            >
               <img
                 className={css.image}
                 src={posterUrl}

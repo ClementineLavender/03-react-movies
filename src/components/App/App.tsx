@@ -3,6 +3,8 @@ import toast, { Toaster } from "react-hot-toast";
 import SearchBar from "../SearchBar/SearchBar";
 import MovieGrid from "../MovieGrid/MovieGrid";
 import Loader from "../Loader/Loader";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import MovieModal from "../MovieModal/MovieModal";
 
 import { fetchMovies } from "../../services/movieServices";
 
@@ -11,9 +13,11 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const handleSearch = async (query) => {
     setMovies([]);
+    setIsError(false);
     setIsLoading(true);
 
     try {
@@ -27,6 +31,7 @@ export default function App() {
 
       setMovies(moviesData);
     } catch (error) {
+      setIsError(true);
       toast.error("Something went wrong. Please try again!");
     } finally {
       setIsLoading(false);
@@ -37,16 +42,22 @@ export default function App() {
     setSelectedMovie(movie);
   };
 
+  const handleCloseModal = () => {
+    setSelectedMovie(null);
+  };
+
   return (
     <div>
       <Toaster position="top-right" />
       <SearchBar onSubmit={handleSearch} />
 
-      {isLoading ? (
-        <Loader />
-      ) : (
+      {isLoading && <Loader />}
+      {isError && !isLoading && <ErrorMessage />}
+      {!isLoading && !isError && (
         <MovieGrid movies={movies} onSelect={handleSelectMovie} />
       )}
+
+      <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
     </div>
   );
 }
